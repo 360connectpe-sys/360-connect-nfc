@@ -1,0 +1,26 @@
+// Banco de preguntas de trivia. La PRIMERA opción siempre es la correcta
+// (el juego las mezcla automáticamente). Agrega más preguntas libremente.
+export const triviaPool = [
+  { q: '¿Cuál es el ingrediente principal del ceviche?', options: ['Pescado fresco', 'Pollo', 'Cerdo', 'Carne de res'] },
+  { q: '¿Con qué se prepara la chicha morada?', options: ['Maíz morado', 'Uva negra', 'Arándanos', 'Remolacha'] },
+  { q: '¿En qué región del Perú se encuentra Machu Picchu?', options: ['Cusco', 'Puno', 'Arequipa', 'Ayacucho'] },
+  { q: '¿Qué tubérculo tiene más de 3 000 variedades en el Perú?', options: ['La papa', 'La yuca', 'El olluco', 'La mashua'] },
+  { q: '¿Cuál es la capital del Perú?', options: ['Lima', 'Cusco', 'Trujillo', 'Arequipa'] },
+  { q: '¿Qué lago navegable comparten Perú y Bolivia?', options: ['Titicaca', 'Junín', 'Poopó', 'Parinacochas'] },
+  { q: '¿Qué cóctel lleva pisco, limón, jarabe y clara de huevo?', options: ['Pisco sour', 'Chilcano', 'Mojito', 'Caipiriña'] },
+  { q: '¿Con qué se acompañan tradicionalmente los picarones?', options: ['Miel de chancaca', 'Manjar blanco', 'Chocolate', 'Leche condensada'] },
+  { q: '¿Qué se usa tradicionalmente en los anticuchos?', options: ['Corazón de res', 'Pechuga de pollo', 'Lomo de cerdo', 'Cordero'] },
+  { q: '¿Qué animal aparece en el escudo del Perú?', options: ['Vicuña', 'Llama', 'Alpaca', 'Cóndor'] },
+  { q: '¿Cuántos jugadores tiene un equipo de fútbol en cancha?', options: ['11', '10', '9', '12'] },
+  { q: '¿Qué planeta es conocido como el planeta rojo?', options: ['Marte', 'Júpiter', 'Venus', 'Saturno'] },
+  { q: '¿Qué océano baña la costa peruana?', options: ['Pacífico', 'Atlántico', 'Índico', 'Ártico'] },
+  { q: '¿Qué da el color amarillo a la papa a la huancaína?', options: ['Ají amarillo', 'Cúrcuma', 'Mostaza', 'Azafrán'] },
+  { q: '¿Qué plato combina carne salteada, cebolla, tomate y papas fritas?', options: ['Lomo saltado', 'Seco de res', 'Tacu tacu', 'Carapulcra'] },
+  { q: '¿Cuál es la moneda actual del Perú?', options: ['Sol', 'Peso', 'Inti', 'Real'] },
+  { q: '¿Qué grano andino es considerado un "superalimento"?', options: ['Quinua', 'Arroz', 'Trigo', 'Cebada'] },
+  { q: '¿Qué instrumento de cuerdas es típico de los Andes?', options: ['Charango', 'Saxofón', 'Guitarra eléctrica', 'Batería'] },
+  { q: '¿Cuántos minutos hay en una hora y media?', options: ['90', '80', '100', '120'] },
+  { q: '¿Qué postre limeño lleva manjar blanco y merengue al oporto?', options: ['Suspiro a la limeña', 'Mazamorra morada', 'Arroz con leche', 'King kong'] },
+  { q: '¿Cuál es el río más caudaloso del mundo, que nace en el Perú?', options: ['Amazonas', 'Nilo', 'Misisipi', 'Paraná'] },
+  { q: '¿Qué fruta peruana se usa en helados y tiene pulpa anaranjada y harinosa?', options: ['Lúcuma', 'Mango', 'Papaya', 'Maracuyá'] },
+]

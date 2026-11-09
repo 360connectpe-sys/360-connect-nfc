@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+
+  /* Paleta del restaurante (cálida) */
+  --color-cream: #fbf5ec;
+  --color-sand: #f1e6d6;
+  --color-latte: #e4d3bc;
+  --color-espresso: #24170f;
+  --color-cocoa: #4a3427;
+  --color-terra: #c65a3a;
+  --color-terra-dark: #a4452a;
+  --color-gold: #e7a93b;
+  --color-olive: #5e6b3a;
+
+  /* Paleta arcade (Zona de juegos) */
+  --color-arcade: #1b1220;
+  --color-arcade-2: #2a1c31;
+  --color-neon: #ffb547;
+  --color-mint: #5eead4;
+  --color-pink: #ff6b8b;
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  --animate-float-up: float-up 0.7s ease-out forwards;
+  --animate-blink: blink 1s steps(2, start) infinite;
+  --animate-shake: shake 0.35s ease-in-out;
+  --animate-ping-slow: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes float-up {
+    from { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -48px) scale(1.2); }
+  }
+  @keyframes blink {
+    to { visibility: hidden; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+}
+
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  @apply bg-espresso font-sans text-espresso antialiased;
+  overscroll-behavior-y: none;
+}
+button { cursor: pointer; touch-action: manipulation; }
+
+/* Botón "pixel" estilo arcade */
+.pixel-btn {
+  @apply relative font-pixel text-[11px] uppercase tracking-wider text-arcade transition-transform active:translate-y-1;
+  background: var(--color-neon);
+  box-shadow:
+    0 4px 0 0 #b9771e,
+    0 0 0 3px var(--color-arcade),
+    0 4px 0 3px var(--color-arcade);
+}
+.pixel-btn:active { box-shadow: 0 0 0 3px var(--color-arcade); }
+
+.pixel-frame {
+  box-shadow:
+    0 0 0 3px var(--color-arcade),
+    0 0 0 5px rgba(255, 181, 71, 0.55);
+}
+
+/* Fondo con scanlines y grilla sutil para la zona arcade */
+.arcade-bg {
+  background-color: var(--color-arcade);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 20% 0%, rgba(255, 107, 139, 0.18), transparent 45%),
+    radial-gradient(circle at 100% 30%, rgba(94, 234, 212, 0.12), transparent 40%);
+}
+.pixel-grid {
+  background-image:
+    linear-gradient(rgba(255, 181, 71, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 181, 71, 0.07) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Cartas de memoria con giro 3D */
+.flip { perspective: 600px; }
+.flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.flip.is-open .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.flip-back { transform: rotateY(180deg); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+
+.shimmer {
+  background: linear-gradient(100deg, #efe3d1 30%, #f8efe2 50%, #efe3d1 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
