@@ -1,140 +1,162 @@
-# 360 CONNECT · Mesa digital (MVP)
+# 360 CONNECT · Carta digital + Zona de juegos (MVP)
 
-Prototipo de la experiencia que vive el cliente al acercar su celular a la **placa NFC/QR** de su mesa.
-Restaurante ficticio de demostración: **Casa Nativa** (Miraflores, Lima), **Mesa 04**.
+Prototipo de la experiencia que vive el cliente al acercar su celular a la **placa NFC/QR** del restaurante.
+Restaurante ficticio de demostración: **Casa Nativa** (Miraflores, Lima).
 
-Stack: **React 19 + Vite + Tailwind CSS 4 + Lucide Icons**. Sin servidor propio y listo para **GitHub Pages**.
+Stack: **React 19 + Vite + Tailwind CSS 4 + Lucide Icons**. Frontend en **GitHub Pages**; backend opcional en **Supabase**.
+
+Demo publicada: https://360connectpe-sys.github.io/360-connect-nfc/
 
 ---
 
 ## 1. Ejecutar en tu computadora
 
-Requisito: [Node.js 20 o superior](https://nodejs.org).
+Requisito: [Node.js 20+](https://nodejs.org).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abre la URL que aparece (ej. `http://localhost:5173`). Como el servidor arranca con `--host`, también verás una URL de red
-(ej. `http://192.168.1.20:5173`). Ábrela **desde tu celular** (conectado al mismo Wi-Fi) para probar en un teléfono real.
-
-Otros comandos:
+Abre la URL que aparece. Como arranca con `--host`, también verás una URL de red (ej. `http://192.168.1.20:5173`) para abrirla desde tu celular en el mismo Wi-Fi.
 
 ```bash
-npm run build     # genera la versión de producción en /dist
+npm run build     # versión de producción en /dist
 npm run preview   # sirve /dist para revisarla
 ```
 
-### Simular distintas mesas
-Cada placa NFC/QR apunta a la misma web con un parámetro distinto:
+**Sin mesas:** todas las placas del local apuntan a la misma URL. Los enlaces antiguos con `?mesa=04` siguen funcionando: el parámetro se ignora y se borra de la barra de direcciones.
 
-```
-https://360connectpe-sys.github.io/360-connect-nfc/?mesa=04
-https://360connectpe-sys.github.io/360-connect-nfc/?mesa=12
-```
+## 2. Publicar en GitHub Pages
 
-## 2. Publicar en GitHub Pages (gratis)
+El workflow `.github/workflows/deploy.yml` publica automáticamente cada `push` a `main`
+(requiere *Settings → Pages → Source: GitHub Actions*, ya configurado).
 
-1. Crea un repositorio en GitHub (`360-connect-nfc`) y sube este proyecto a la rama `main`:
-   ```bash
-   git init && git add . && git commit -m "MVP 360 Connect"
-   git branch -M main
-   git remote add origin https://github.com/360connectpe-sys/360-connect-nfc.git
-   git push -u origin main
-   ```
-2. En GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. El workflow incluido (`.github/workflows/deploy.yml`) compila y publica la web automáticamente en cada `push`.
-   En 1–2 minutos estará en `https://360connectpe-sys.github.io/360-connect-nfc/`.
-4. Graba esa URL (con `?mesa=XX`) en cada placa NFC y genera el QR con la misma dirección.
+---
 
-> El proyecto usa rutas relativas (`base: './'`) y navegación con `#`, así que funciona en cualquier subcarpeta sin configurar nada más.
+## 3. Catálogo de juegos (7)
 
-## 3. ¿Qué es real y qué es simulado?
+| # | Juego | Tipo | Duración | Controles |
+|---|---|---|---|---|
+| 1 | **Memoria gastronómica** | 🏆 Ranking semanal | hasta 3 min | toque |
+| 2 | **Chef Frenético** | 🏆 Ranking semanal | 45 s | deslizar · ← → |
+| 3 | **Carrera del Chef** | 🏆 Ranking semanal | hasta 60 s, 3 vidas | toque / botón · ESPACIO · pausa |
+| 4 | **Atrapa al Travieso** | 🎮 Récord personal | 30 s | toque |
+| 5 | **Serpiente Hambrienta** | 🎮 Récord personal | sin límite | deslizar · cruceta · flechas · pausa |
+| 6 | **Duelo Arcade** (interno: *Duelo de Mesa*) | ⚔️ 2 jugadores | 45 s | toque |
+| 7 | **Carrera Multijugador** (interno: *Carrera de Mesa*) | ⚔️ 2–4 jugadores | 60–90 s | mantener ← → |
 
-| Función | Estado | Detalle |
+**Puntuación de los juegos con ranking** (reglas únicas en `src/services/backend/validation.js`, replicadas en SQL):
+
+- **Memoria:** `5 000 − 150 × errores − 30 × segundos + bono` (bono `20 × (45 − s)` si terminas en menos de 45 s). Nunca es negativa. Solo cuenta si completas las 8 parejas.
+- **Chef Frenético:** ingrediente del pedido `+100 × multiplicador`; ingrediente equivocado, zapato, bomba o pescado malogrado `−50` (mínimo 0). El multiplicador sube con cada pedido completo (x1 → x2 → x3, máximo). Un error lo devuelve a x1 y cancela el pedido.
+- **Carrera del Chef:** `metros × 5 + monedas × 50 + ingredientes × 100`. La velocidad aumenta. Termina con 0 vidas o a los 60 s.
+
+**Por restaurante:** la demo activa los 7 juegos. Un restaurante real activa **exactamente 4**
+(`src/config/restaurant.js → enabledGames`, validado en `src/config/validateConfig.js` y en la base de datos).
+Los juegos no activos no aparecen y tampoco abren con un enlace directo.
+
+## 4. Registro de jugadores
+
+- Solo se piden **nombre y apellido**. No se pide DNI, correo, contraseña, teléfono ni fecha de nacimiento.
+- Cada perfil recibe un **identificador interno** (UUID). Dos personas con el mismo nombre son jugadores distintos.
+- La sesión queda guardada en el dispositivo: no se vuelve a pedir el registro. "¿No eres tú?" crea otro perfil (útil si se comparte el celular).
+- **Limitación importante:** el nombre **no autentica**. Cualquiera puede escribir cualquier nombre.
+  Por eso los puntajes se vinculan a la **identidad del dispositivo** (en producción: usuario anónimo de Supabase Auth) y no al nombre:
+  escribir el nombre de otra persona **no** da acceso a sus puntajes ni a sus premios. Si alguien borra los datos del navegador, pierde su perfil.
+
+## 5. Ranking 2.0
+
+- Tres rankings independientes: Memoria gastronómica, Chef Frenético y Carrera del Chef.
+- Muestra el podio, el top 10 con nombre y apellido, tu posición, tu mejor puntaje semanal, tu récord personal, la cuenta regresiva y el historial de ganadores.
+- **Temporadas:** de lunes 00:00:00 a domingo 23:59:59, **hora de Lima** (no la del celular). Cada lunes empieza una tabla nueva y las anteriores quedan en el historial.
+- **Reglas:** solo cuentan partidas completas y válidas. Se guarda la mejor puntuación semanal por jugador y juego (no se suman intentos). En empate gana quien la logró primero. Cada partida se registra una sola vez.
+- **Anti-trampa:** al empezar se abre una *sesión de juego* con la hora del servidor. Al terminar se envían las estadísticas, y el servidor **recalcula el puntaje**, verifica que el tiempo sea posible y rechaza envíos duplicados.
+  Un puntaje escrito a mano desde el navegador se rechaza.
+
+## 6. Premios y verificación con DNI físico
+
+1. Cada domingo a las 23:59:59 (hora de Lima) cierra la temporada. El lunes 00:01 se generan los ganadores oficiales (top 3 de cada ranking).
+2. Cada ganador recibe un **código de premio único y de un solo uso** (ej. `CN-7K4Q-X9MD`, válido 30 días). Lo ve en **Premios → Tus premios**. Solo el ganador ve su código completo.
+3. Va al local con su **DNI físico** y el código. El personal entra a **Premios → Acceso para el personal**, verifica el código, confirma que el nombre del DNI coincide y marca el premio como entregado.
+4. Un código ya canjeado o vencido no se puede volver a usar. Cada verificación y cada canje (también los rechazados) queda en la auditoría.
+
+**Privacidad:** no se piden ni se guardan números ni fotos del DNI. La verificación es solo presencial.
+
+## 7. ¿Qué es real y qué es simulado?
+
+| Función | En esta demo (GitHub Pages, sin servidor) | Con Supabase activado |
 |---|---|---|
-| Pantalla principal, mesa, accesos rápidos | ✅ Real | La mesa se lee de la URL (`?mesa=07`) |
-| Menú digital por categorías | ✅ Real | Datos ficticios en `src/data/menu.js` |
-| Botones de Instagram, TikTok, Facebook, WhatsApp y Maps | ✅ Real | Abren los enlaces configurados (de ejemplo por ahora) |
-| Wi-Fi: ver y copiar la contraseña | ✅ Real | Credenciales ficticias |
-| Promociones | ✅ Real (visual) | Datos ficticios. No hay canje |
-| Tarjeta de sellos para clientes frecuentes | 🟡 Simulado | Muestra 6/10 sellos fijos |
-| 3 juegos (Memoria, Trivia, Reflejos) | ✅ Real | Funcionan con toque en el celular, con sonido y vibración |
-| Apodo del jugador | ✅ Real | Se guarda en el celular |
-| Registro automático del puntaje | ✅ Real, **solo en este dispositivo** | localStorage |
-| Ranking semanal con podio | 🟡 Parcial | Calcula de verdad la semana (lunes 00:00), pero solo con partidas de este celular más 9 jugadores de ejemplo |
-| Premios para el top 3 | 🟡 Visual | Configurables. Sin validación ni canje automático |
-| Pantalla de conexión NFC | 🟡 Simulado | Es una animación. El NFC real lo da la placa, que solo abre la URL |
-| Multijugador por mesa | 🔜 Estructura lista | `services/rooms/roomService.js` (salas por mesa) |
-| Ranking compartido (Supabase) | 🔜 Código listo, sin activar | `services/scores/supabaseScoreRepository.js` |
-| Estadísticas | 🟡 Simulado | `services/analytics.js` cuenta eventos en el celular |
-| Pedidos y pagos | ❌ No incluido | Fuera del alcance del MVP |
+| Carta, promos, redes, WhatsApp, Wi-Fi | ✅ Real | ✅ Real |
+| 7 juegos jugables (táctil + teclado) | ✅ Real | ✅ Real |
+| Registro nombre + apellido | ✅ Real, guardado **en este celular** | ✅ Real, en la base de datos |
+| Validación de partidas | 🟡 Se ejecuta **en el navegador** (puede alterarse) | ✅ En el servidor (SQL) |
+| Ranking semanal | 🟡 **Solo este celular** + jugadores de ejemplo. **No es un ranking compartido** | ✅ Compartido entre todos los clientes |
+| Cierre de temporada y códigos de premio | 🟡 Automático en el celular + botón "Simular cierre" | ✅ Automático (pg_cron) |
+| Panel del personal | 🟡 PIN de demo `2580` | ✅ Cuenta del personal con correo y contraseña |
+| Multijugador | 🟡 Entre **pestañas del mismo navegador** + práctica contra la CPU | ✅ Entre celulares (Supabase Realtime) |
+| Récords de juegos casuales | ✅ Récord personal local | ✅ igual (por diseño) |
 
-### Importante sobre localStorage
-`localStorage` guarda datos **dentro del navegador de cada celular**. Por eso:
-- El ranking que ve un cliente solo incluye **sus propias partidas** (más los jugadores demo).
-- **No** se comparte entre mesas ni entre clientes, y se pierde si el cliente borra los datos del navegador.
+**localStorage no comparte datos entre celulares.** Cada teléfono tiene su propio "ranking". Para que todos los clientes compitan entre sí y los premios sean reales, hay que activar Supabase (sección 8).
 
-Sirve para la demo. Para un ranking real compartido hace falta una base de datos (ver sección 5).
+## 8. Activar el backend real (Supabase)
 
-## 4. Personalizar para otro restaurante
+> El código del backend está **escrito y probado** contra PostgreSQL real (32 pruebas automáticas con PGlite: registro, anti-trampa, duplicados, desempates, cierre de temporada, códigos, canje único, permisos y separación de restaurantes).
+> **Falta probarlo en un proyecto Supabase real**, porque crearlo requiere tu cuenta.
+
+1. Crea un proyecto gratuito en [supabase.com](https://supabase.com) (región São Paulo, la más cercana a Lima).
+2. **Authentication → Sign In / Providers →** activa **Allow anonymous sign-ins**.
+3. **SQL Editor:** ejecuta `supabase/migrations/001_init.sql`. Después activa la extensión **pg_cron** (Database → Extensions) y ejecuta `002_cron.sql`.
+4. **Personal:** en Authentication → Users → *Add user* crea la cuenta del personal (correo + contraseña). Luego, en SQL:
+   ```sql
+   insert into staff (user_id, restaurant_id, display_name) values ('<uuid-del-usuario>', 'casa-nativa', 'Carla (caja)');
+   ```
+5. En GitHub: *Settings → Secrets and variables → Actions → Variables*, crea `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (Project Settings → API). Pásalas al paso `npm run build` del workflow:
+   ```yaml
+   - run: npm run build
+     env:
+       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+   ```
+   La clave `anon` es pública por diseño. **Nunca** uses la clave `service_role` en el frontend ni en GitHub Pages.
+
+**Seguridad:** RLS está activado en todas las tablas. Los clientes no pueden leer ni escribir puntajes, premios o jugadores directamente, solo mediante funciones del servidor que verifican la identidad (`auth.uid()`).
+Las funciones internas (cerrar temporadas, generar códigos) no se pueden llamar desde el navegador. Cada fila lleva `restaurant_id`, así que los datos de distintos restaurantes nunca se mezclan.
+
+**Límite honesto del anti-trampa:** los juegos corren en el celular, así que un programador experto podría fabricar estadísticas *plausibles*. El servidor descarta todo lo imposible (puntajes que no cuadran, tiempos irreales, duplicados).
+Además, el canje presencial con DNI y código limita el impacto. Si en el futuro se necesita más, se puede limitar la cantidad de partidas por día o pedir verificación adicional al top 3.
+
+## 9. Personalizar para otro restaurante
 
 | Qué cambiar | Archivo |
 |---|---|
-| Nombre, textos, mesa por defecto, enlaces, Wi-Fi, **premios** y condiciones | `src/config/restaurant.js` |
-| Platos, precios y fotos | `src/data/menu.js` |
-| Promociones y fidelización | `src/data/promos.js` |
-| Preguntas de trivia (la 1.ª opción es la correcta) | `src/data/trivia.js` |
-| Colores y tipografías | `src/index.css` (bloque `@theme`) |
+| Nombre, textos, enlaces, Wi-Fi, **juegos activos (4)**, premios | `src/config/restaurant.js` |
+| Platos y fotos | `src/data/menu.js` |
+| Promociones | `src/data/promos.js` |
+| Colores y tipografías | `src/index.css` (`@theme`) |
+| Con Supabase: juegos activos y premios | tablas `restaurants.enabled_games` y `prize_config` |
 
-Las fotos actuales son referenciales (Unsplash). Coloca las fotos reales en `public/img/` y usa `./img/lomo.jpg`.
-Si una foto no carga, se muestra automáticamente un fondo con emoji.
+Cada restaurante tiene su propio `id`, y con él sus propios jugadores, rankings, premios y salas.
 
-## 5. Ranking compartido con Supabase (siguiente etapa)
-
-1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
-2. En **SQL Editor**, ejecuta el SQL que está en el comentario de `src/services/scores/supabaseScoreRepository.js`.
-3. Copia `.env.example` a `.env` y completa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (Project Settings → API).
-4. `npm run build`. La app detecta las variables y usa Supabase sin cambiar nada en la interfaz.
-   (Para GitHub Actions, agrega esas variables como *secrets* y pásalas en el paso `npm run build`.)
-
-> Este adaptador está escrito pero **no se ha probado contra una base real**. Para producción, valida los puntajes en una Edge Function para evitar trampas.
-
-Para usar Firebase en su lugar, crea `firebaseScoreRepository.js` con la misma interfaz (`addScore`, `getLeaderboard`, `clear`).
-
-## 6. Estructura del proyecto
+## 10. Estructura
 
 ```
 src/
-├── config/restaurant.js        ← configuración del restaurante (multi-restaurante a futuro)
-├── data/                       ← menú, promos y trivia (luego vendrán del panel admin)
-├── context/AppContext.jsx      ← mesa, navegación, apodo y avisos
-├── pages/                      ← Inicio, Menú, Promos, Conecta, Juegos, Ranking, Premios
+├── config/                  restaurante + validación (exactamente 4 juegos)
 ├── games/
-│   ├── registry.js             ← lista de juegos (solo / multi, listo / próximamente)
-│   ├── GameShell.jsx           ← intro → 3-2-1 → partida → resultado + guardado en ranking
-│   ├── MemoryGame.jsx · TriviaGame.jsx · ReflexGame.jsx
+│   ├── catalog.js           los 7 juegos (categoría, reglas, carga diferida)
+│   ├── engine/              sprites pixel art 16-bit, bucle de juego en canvas
+│   ├── SoloGameShell.jsx    intro → sesión → 3-2-1 → partida → validación → resultado
+│   ├── solo/                Memoria · Chef Frenético · Carrera del Chef · Travieso · Serpiente
+│   └── multi/               Salas (MultiplayerShell) · Duelo Arcade · Carrera Multijugador
 ├── services/
-│   ├── scores/                 ← ranking: localStorage hoy, Supabase mañana (misma interfaz)
-│   ├── rooms/roomService.js    ← salas por mesa para multijugador
-│   └── analytics.js            ← eventos (visitas, partidas, clics en redes)
-└── components/                 ← barra inferior, imágenes, modal de apodo, iconos
+│   ├── backend/             interfaz única: localBackend (demo) | supabaseBackend (producción)
+│   │   └── validation.js    reglas de puntuación compartidas
+│   └── multiplayer/         salas por código (useRoom) + transporte (BroadcastChannel | Realtime)
+├── pages/                   Inicio, Menú, Promos, Conecta, Juegos, Ranking, Premios, Personal
+└── lib/season.js            temporadas en hora de Lima
+supabase/migrations/         esquema SQL, RLS, funciones y cron
 ```
 
-**Agregar un juego:** crea `src/games/MiJuego.jsx` que reciba `{ onFinish }` y llame
-`onFinish({ score, stats: [['Etiqueta', valor]] })`. Después regístralo en `registry.js`.
-El intro, la cuenta regresiva, el guardado y la pantalla de resultados ya los resuelve `GameShell`.
-
-### Puntuación (equilibrada para un ranking general)
-- **Memoria:** 800 + 15 pts por cada segundo bajo 60 s − 10 pts por cada intento extra (≈ 1 000–1 700).
-- **Trivia:** 100 + 10 pts por cada segundo restante en cada acierto (máx. ≈ 1 760).
-- **Reflejos:** 10 + 2×combo por ingrediente, ⭐ = 100, 💣 = −50.
-
-## 7. Hoja de ruta sugerida
-1. Ranking compartido (Supabase) → **ranking real entre todas las mesas**.
-2. Panel administrativo: editar menú, promos y premios. Ver el top 3 y marcar premios como canjeados.
-3. Validación de premios con un código QR único por ganador.
-4. Multijugador por mesa (Supabase Realtime sobre `roomService`).
-5. Estadísticas: escaneos por mesa, horarios y secciones más vistas.
-6. Multi-restaurante: un `restaurant.id` por cliente y configuración cargada desde la base de datos.
+**Multijugador:** el anfitrión crea una sala con un código temporal de 5 caracteres y lo comparte (también por enlace, con el código ya incluido). Todos marcan "listo", el anfitrión inicia y todos los celulares reciben la misma **semilla**, así ven los mismos objetivos y el mismo circuito.
+Los latidos cada 2 s detectan desconexiones (7 s sin latido = desconectado). La revancha devuelve a todos a la sala.

@@ -1,7 +1,7 @@
 /**
  * Analítica (SIMULADA). Cuenta eventos en localStorage para mostrar la idea.
  * En producción: enviar a Supabase / Firebase / Google Analytics para que el
- * restaurante vea visitas por mesa, secciones más vistas, partidas jugadas…
+ * restaurante vea visitas por día, secciones más vistas, partidas jugadas…
  */
 const KEY = '360c:analytics:v1'
 

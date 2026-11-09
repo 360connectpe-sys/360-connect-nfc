@@ -21,9 +21,16 @@ export const restaurant = {
   hours: 'Lun – Dom · 8:00 a. m. – 11:00 p. m.',
   coverImage: img('photo-1517248135467-4c7edcad34c4', 1000),
 
-  // Mesa por defecto. Cada placa NFC/QR apunta a la misma URL con ?mesa=XX
-  // Ej.: https://usuario.github.io/360-connect/?mesa=07
-  defaultTable: '04',
+  // Todas las placas NFC/QR del local apuntan a la MISMA URL (sin número de mesa).
+  // Enlaces antiguos con ?mesa=XX siguen funcionando: el parámetro se ignora.
+
+  // DEMO: los 7 juegos activos. Un restaurante real (isDemo: false) debe
+  // activar EXACTAMENTE 4 (ver src/config/validateConfig.js).
+  isDemo: true,
+  enabledGames: ['memoria', 'chef-frenetico', 'carrera-chef', 'travieso', 'serpiente', 'duelo', 'carrera-multi'],
+  // Ejemplo de restaurante real:
+  // isDemo: false,
+  // enabledGames: ['memoria', 'chef-frenetico', 'serpiente', 'duelo'],
 
   // Enlaces de ejemplo: reemplazar por los reales del restaurante
   links: {
@@ -32,7 +39,7 @@ export const restaurant = {
     facebook: 'https://facebook.com/casanativa.demo',
     whatsapp:
       'https://wa.me/51987654321?text=' +
-      encodeURIComponent('¡Hola Casa Nativa! Les escribo desde la mesa digital 👋'),
+      encodeURIComponent('¡Hola Casa Nativa! Les escribo desde la carta digital 👋'),
     maps: 'https://www.google.com/maps/search/?api=1&query=' +
       encodeURIComponent('Av. José Larco 742, Miraflores, Lima'),
   },
@@ -44,7 +51,8 @@ export const restaurant = {
     security: 'WPA2',
   },
 
-  // Premios para el TOP 3 del ranking semanal (configurables)
+  // Premios por posición. Se entregan en CADA uno de los rankings semanales
+  // (Memoria gastronómica, Chef Frenético y Carrera del Chef).
   prizes: [
     {
       place: 1,
@@ -66,11 +74,14 @@ export const restaurant = {
     },
   ],
   prizeTerms: [
-    'El ranking se reinicia cada lunes a las 00:00.',
-    'Se considera la mejor puntuación de cada jugador en la semana.',
-    'Para reclamar, muestra tu apodo y posición al personal.',
+    'Cada temporada va de lunes 00:00 a domingo 23:59:59 (hora de Lima).',
+    'Cuenta la mejor puntuación de cada jugador por juego (no se suman intentos).',
+    'En caso de empate gana quien logró primero esa puntuación.',
+    'Para reclamar: DNI físico + código de premio único. No pedimos ni guardamos tu DNI.',
+    'El código es de un solo uso y vence a los 30 días del cierre de la temporada.',
     'Premios no acumulables con otras promociones.',
   ],
+  prizeValidityDays: 30,
 
   poweredBy: '360 CONNECT',
 }

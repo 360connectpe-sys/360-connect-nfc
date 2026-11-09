@@ -105,6 +105,8 @@ button { cursor: pointer; touch-action: manipulation; }
 }
 .flip-back { transform: rotateY(180deg); }
 
+.pixelated { image-rendering: pixelated; image-rendering: crisp-edges; }
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 

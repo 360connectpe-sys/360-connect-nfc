@@ -1,7 +1,7 @@
 import { ChevronRight, Clock, Gift, MapPin, Tag, Trophy, UtensilsCrossed, Wifi, Share2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import SmartImage from '../components/SmartImage'
-import { TableBadge, formatPrice } from '../components/ui'
+import { formatPrice } from '../components/ui'
 import { promos } from '../data/promos'
 
 const quick = [
@@ -14,7 +14,7 @@ const quick = [
 ]
 
 export default function Home() {
-  const { restaurant, navigate, nickname } = useApp()
+  const { restaurant, navigate, player } = useApp()
   const todayPromo = promos[1]
 
   return (
@@ -27,10 +27,12 @@ export default function Home() {
           <div className="grid size-12 place-items-center rounded-2xl bg-terra font-display text-lg font-bold text-cream shadow-lg ring-2 ring-cream/30">
             {restaurant.initials}
           </div>
-          <TableBadge />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cream/95 px-3 py-1.5 text-xs font-bold text-espresso shadow-sm">
+            <span className="size-2 rounded-full bg-olive" /> Abierto hoy
+          </span>
         </div>
         <div className="absolute right-5 bottom-10 left-5 animate-fade-up text-cream">
-          <p className="text-sm font-semibold tracking-wide text-gold">¡Bienvenido{nickname ? `, ${nickname}` : ''}!</p>
+          <p className="text-sm font-semibold tracking-wide text-gold">¡Bienvenido{player ? `, ${player.firstName}` : ''}!</p>
           <h1 className="mt-1 font-display text-[2.6rem] leading-none font-bold">{restaurant.name}</h1>
           <p className="mt-2 text-sm text-cream/80">{restaurant.tagline}</p>
         </div>
@@ -47,7 +49,7 @@ export default function Home() {
           <div className="pixel-frame grid size-16 shrink-0 place-items-center rounded-2xl bg-arcade-2 text-3xl">🕹️</div>
           <div className="min-w-0 flex-1">
             <p className="font-pixel text-[11px] leading-relaxed text-neon">ZONA DE JUEGOS</p>
-            <p className="mt-1.5 text-sm text-cream/80">Juega mientras esperas y gana descuentos esta semana.</p>
+            <p className="mt-1.5 text-sm text-cream/80">7 juegos arcade · compite por premios cada semana.</p>
           </div>
           <span className="animate-blink font-pixel text-xs text-mint">▶</span>
         </button>
@@ -96,7 +98,7 @@ export default function Home() {
         </div>
 
         <p className="mt-8 text-center text-[11px] tracking-widest text-cocoa/40 uppercase">
-          Mesa digital · Powered by <strong>{restaurant.poweredBy}</strong>
+          Carta digital · Powered by <strong>{restaurant.poweredBy}</strong>
         </p>
       </div>
     </div>

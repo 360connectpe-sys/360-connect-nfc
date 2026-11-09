@@ -33,19 +33,6 @@ export function PageHeader({ title, subtitle, back = '', right = null, dark = fa
   )
 }
 
-export function TableBadge({ className = '' }) {
-  const { table } = useApp()
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full bg-cream/95 px-3 py-1.5 text-xs font-bold text-espresso shadow-sm ${className}`}>
-      <span className="relative flex size-2">
-        <span className="absolute inline-flex size-full animate-ping-slow rounded-full bg-olive/60" />
-        <span className="relative inline-flex size-2 rounded-full bg-olive" />
-      </span>
-      Mesa {table}
-    </span>
-  )
-}
-
 export function SimBadge({ children = 'Demo', dark = false }) {
   return (
     <span

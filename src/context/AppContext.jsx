@@ -1,28 +1,29 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { restaurant } from '../config/restaurant'
+import { resolveEnabledGames } from '../config/validateConfig'
+import { backend } from '../services/backend'
 import { track } from '../services/analytics'
 
 const AppContext = createContext(null)
 
-/** Mesa: se lee de la URL (?mesa=07) que trae cada placa NFC/QR. */
-function resolveTable() {
-  const fromUrl = new URLSearchParams(window.location.search).get('mesa')
-  if (fromUrl && /^\d{1,3}$/.test(fromUrl)) {
-    const t = fromUrl.padStart(2, '0')
-    sessionStorage.setItem('360c:table', t)
-    return t
+// Enlaces antiguos de placas con ?mesa=XX: se ignoran y se limpian de la URL.
+;(function stripLegacyTableParam() {
+  const url = new URL(window.location.href)
+  if (url.searchParams.has('mesa')) {
+    url.searchParams.delete('mesa')
+    window.history.replaceState(null, '', url)
   }
-  return sessionStorage.getItem('360c:table') || restaurant.defaultTable
-}
+})()
 
 /** Ruta basada en hash (#/menu) => compatible con GitHub Pages sin configuración. */
 const readRoute = () => window.location.hash.replace(/^#\/?/, '').split('?')[0]
 
 export function AppProvider({ children }) {
-  const [table] = useState(resolveTable)
   const [route, setRoute] = useState(readRoute)
-  const [nickname, setNicknameState] = useState(() => localStorage.getItem('360c:nickname') || '')
   const [toast, setToast] = useState(null)
+  // undefined = cargando · null = sin registrar · objeto = jugador registrado
+  const [player, setPlayer] = useState(undefined)
+  const [settings, setSettings] = useState({ enabledGames: resolveEnabledGames(restaurant), prizes: restaurant.prizes })
 
   useEffect(() => {
     const onHash = () => {
@@ -34,34 +35,45 @@ export function AppProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    track(`view:${route || 'inicio'}`, { table })
-  }, [route, table])
+    backend.getCurrentPlayer().then((p) => setPlayer(p ?? null), () => setPlayer(null))
+    backend.getRestaurantSettings().then(setSettings, (e) => console.error(e))
+  }, [])
+
+  useEffect(() => {
+    track(`view:${route || 'inicio'}`)
+  }, [route])
 
   const navigate = useCallback((path) => {
     window.location.hash = `/${path}`
   }, [])
 
-  const setNickname = useCallback((name) => {
-    const clean = name.trim().slice(0, 16)
-    localStorage.setItem('360c:nickname', clean)
-    setNicknameState(clean)
-  }, [])
-
-  const showToast = useCallback((message) => {
-    setToast({ message, id: Date.now() })
-  }, [])
+  const showToast = useCallback((message) => setToast({ message, id: Date.now() }), [])
 
   useEffect(() => {
     if (!toast) return
-    const t = setTimeout(() => setToast(null), 2200)
+    const t = setTimeout(() => setToast(null), 2400)
     return () => clearTimeout(t)
   }, [toast])
 
+  const registerPlayer = useCallback(async (data) => {
+    const p = await backend.registerPlayer(data)
+    setPlayer(p)
+    track('player_registered')
+    return p
+  }, [])
+
+  const switchPlayer = useCallback(async () => {
+    await backend.signOutPlayer()
+    setPlayer(null)
+  }, [])
+
   const value = useMemo(
-    () => ({ restaurant, table, route, navigate, nickname, setNickname, toast, showToast }),
-    [table, route, navigate, nickname, setNickname, toast, showToast],
+    () => ({ restaurant, settings, route, navigate, toast, showToast, player, registerPlayer, switchPlayer }),
+    [settings, route, navigate, toast, showToast, player, registerPlayer, switchPlayer],
   )
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
 export const useApp = () => useContext(AppContext)
+
+export const fullName = (p) => (p ? `${p.firstName} ${p.lastName}` : '')
